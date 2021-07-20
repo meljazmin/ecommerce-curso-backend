@@ -1,4 +1,4 @@
-const Roles = require('../model/Roles');
+const Roles = require('../models/Roles');
 const Utils = require('../utils');
 
 const users = [

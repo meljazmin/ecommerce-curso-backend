@@ -1,5 +1,5 @@
 const express = require('express');
-const productos = require('../api/productos');
+const productos = require('../controllers/productos');
 
 const productosRouter = express.Router();
 
@@ -17,55 +17,75 @@ const getIdFromRequestParams = (req) => {
 
     if (!id) throw Error('Id nulo');
 
-    return Number(id);
+    return id.toString();
 }
 
-productosRouter.get('/listar', (req, res) => {
-    const productosLista = productos.listar();
-    if (productosLista.length === 0) {
-        res.status(404).send({ error: 'no hay productos cargados' });
-    } else {
-        res.send(productosLista);
+productosRouter.get('/listar', async (req, res, next) => {
+    try {
+        const productosLista = await productos.listar();
+        if (productosLista.length === 0) {
+            res.status(404).send({ error: 'no hay productos cargados' });
+        } else {
+            res.send(productosLista);
+        }
+    } catch (e) {
+        next(e);
     }
 });
 
-productosRouter.get('/listar/:id', (req, res) => {
-    const id = getIdFromRequestParams(req);
-    if (!id) return;
+productosRouter.get('/listar/:id', async (req, res, next) => {
+    try {
+        const id = getIdFromRequestParams(req);
+        if (!id) return;
 
-    const producto = productos.obtenerPorId(id);
-    if (!producto) {
-        res.status(404).send({ error: 'producto no encontrado' });
-    } else {
+        const producto = await productos.obtenerPorId(id);
+        if (!producto) {
+            res.status(404).send({ error: 'producto no encontrado' });
+        } else {
+            res.send(producto);
+        }
+    } catch (e) {
+        next(e);
+    }
+});
+
+productosRouter.post('/agregar', async (req, res, next) => {
+    try {
+        let { nombre, descripcion, codigo, foto, precio, stock } = req.body;
+        const productoCreado = await productos.agregarProducto(nombre, descripcion, codigo, foto, precio, stock);
+        res.status(201).send(productoCreado);
+    } catch (e) {
+        next(e);
+    }
+});
+
+
+productosRouter.put('/actualizar/:id', async (req, res, next) => {
+    try {
+        // const { title, price, thumbnail } = req.body;
+        const id = getIdFromRequestParams(req);
+        if (!id) return;
+
+        const producto = await productos.actualizarProducto(id, req.body);
+
         res.send(producto);
+    } catch (e) {
+        next(e);
     }
 });
 
-productosRouter.post('/agregar', (req, res) => {
-    let { nombre, descripcion, codigo, foto, precio, stock } = req.body;
-    const productoCreado = productos.agregarProducto(nombre, descripcion, codigo, foto, precio, stock);
-    res.status(201).send(productoCreado);
-});
 
+productosRouter.delete('/borrar/:id', async (req, res, next) => {
+    try {
+        const id = getIdFromRequestParams(req);
+        if (!id) return;
 
-productosRouter.put('/actualizar/:id', (req, res) => {
-    // const { title, price, thumbnail } = req.body;
-    const id = getIdFromRequestParams(req);
-    if (!id) return;
+        await productos.borrarProducto(id);
 
-    const producto = productos.actualizarProducto(id, req.body);
-
-    res.send(producto);
-});
-
-
-productosRouter.delete('/borrar/:id', (req, res) => {
-    const id = getIdFromRequestParams(req);
-    if (!id) return;
-
-    productos.borrarProducto(id);
-
-    res.status(204).send();
+        res.status(204).send();
+    } catch (e) {
+        next(e);
+    }
 });
 
 module.exports = productosRouter;

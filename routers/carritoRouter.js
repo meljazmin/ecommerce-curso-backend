@@ -1,6 +1,6 @@
 const express = require('express');
-const carrito = require('../api/carrito');
-const productos = require('../api/productos');
+const carrito = require('../controllers/carrito');
+const productos = require('../controllers/productos');
 
 const router = express.Router();
 
@@ -18,52 +18,64 @@ const getIdFromRequestParams = (req) => {
 
     if (!id) throw Error('Id nulo');
 
-    return Number(id);
+    return id.toString();
 }
 
-router.get('/listar/:id?', (req, res) => {
-    const id = parseInt(req.params.id);
-    let resBody;
-    if (id) {
-        const item = carrito.obtenerPorId(id);
-        if (!item) {
-            res.status(404).send({ error: 'Item no encontrado' });
-            return;
-        } else {
-            resBody = item;
-        }
-    } else {
-        const items = carrito.listar();
-        if (items.length === 0) {
-            res.status(404).send({ error: 'No hay items en el carrito' });
-            return;
-        } else {
-            resBody = items;
-        }
-    }
-    res.send(resBody);
-});
-
-router.post('/agregar/:idProducto', (req, res) => {
-    const idProducto = parseInt(req.params.idProducto);
-    let { cantidad } = req.body;
-    cantidad = parseInt(cantidad);
-    const producto = productos.obtenerPorId(idProducto);
+router.get('/listar/:id?', async (req, res, next) => {
     try {
-        const item = carrito.agregar(producto, cantidad);
-        res.status(201).send(item);
+        const id = req.params.id;
+        let resBody;
+        if (id) {
+            const item = await carrito.obtenerPorId(id);
+            if (!item) {
+                res.status(404).send({ error: 'Item no encontrado' });
+                return;
+            } else {
+                resBody = item;
+            }
+        } else {
+            const items = await carrito.listar();
+            if (items.length === 0) {
+                res.status(404).send({ error: 'No hay items en el carrito' });
+                return;
+            } else {
+                resBody = items;
+            }
+        }
+        res.send(resBody);
     } catch (e) {
-        res.status(400).send({ error: e.toString() });
+        next(e);
     }
 });
 
-router.delete('/borrar/:id', (req, res) => {
-    const id = getIdFromRequestParams(req);
-    if (!id) return;
+router.post('/agregar/:idProducto', async (req, res, next) => {
+    try {
+        const idProducto = req.params.idProducto;
+        let { cantidad } = req.body;
+        cantidad = parseInt(cantidad);
+        const producto = await productos.obtenerPorId(idProducto);
+        try {
+            const item = await carrito.agregar(producto, cantidad);
+            res.status(201).send(item);
+        } catch (e) {
+            res.status(400).send({ error: e.toString() });
+        }
+    } catch (e) {
+        next(e);
+    }
+});
 
-    carrito.borrar(id);
+router.delete('/borrar/:id', async (req, res, next) => {
+    try {
+        const id = getIdFromRequestParams(req);
+        if (!id) return;
 
-    res.status(204).send();
+        await carrito.borrar(id);
+
+        res.status(204).send();
+    } catch (e) {
+        next(e);
+    }
 });
 
 module.exports = router;
