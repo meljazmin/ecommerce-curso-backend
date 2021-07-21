@@ -24,7 +24,7 @@ class CarritoController {
             throw Error("La cantidad no es correcta");
         }
 
-        const timestamp = utils.calcularTimestamp();
+        const timestamp = new Date();
         return await this.dao.create({ producto, cantidad, timestamp });
     }
 

@@ -1,32 +1,27 @@
 const config = require('../config');
 
-const daoConfigMap = [
+const daoTypes = [
     {
-        value: 1,
+        type: 'MONGOOSE',
         productosDAOPackageName: '../databases/mongoose/ProductosDAO',
         carritoDAOPackageName: '../databases/mongoose/CarritoDAO'
     },
     {
-        value: 2,
-        productosDAOPackageName: '../databases/mongoose/ProductosDAO',
-        carritoDAOPackageName: '../databases/mongoose/CarritoDAO'
-    },
-    {
-        value: 3,
+        type: 'KNEX',
         productosDAOPackageName: '../databases/knex/ProductosDAO',
         carritoDAOPackageName: '../databases/knex/CarritoDAO'
     }
 ];
 
-const daoConfig = daoConfigMap.find(d => d.value === config.DATABASE_CONFIG.SELECTED),
-    databaseConfig = config.DATABASE_CONFIG.config[config.DATABASE_CONFIG.SELECTED];
+const databaseConfig = config.DATABASE_CONFIG.config[config.DATABASE_CONFIG.SELECTED],
+    daoType = daoTypes.find(d => d.type === databaseConfig.type);
 module.exports = {
     getProductosDAO: () => {
-        const module = require(daoConfig.productosDAOPackageName);
+        const module = require(daoType.productosDAOPackageName);
         return new module(databaseConfig);
     },
     getCarritoDAO: () => {
-        const module = require(daoConfig.carritoDAOPackageName);
+        const module = require(daoType.carritoDAOPackageName);
         return new module(databaseConfig);
     }
 };

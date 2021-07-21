@@ -11,19 +11,23 @@ class CarritoDAO extends DAOInterface {
     }
 
     async create(entity) {
-        return await this.knex(table).insert(entity);
+        entity.producto_id = entity.producto.id;
+        delete entity.producto;
+        const id = await this.knex(table).insert(entity);
+        return this.read(id);
     }
 
     async read(id) {
         if (id) {
-            return await this.knex(table).where({ id });
+            return await this.knex(table).where({ id }).first();
         } else {
-            return await this.knex(table).where();
+            return await this.knex(table);
         }
     }
 
     async update(id, entity) {
-        return await this.knex(table).where({ id }).update(entity);
+        await this.knex(table).where({ id }).update(entity);
+        return this.read(id);
     }
 
     async delete(id) {

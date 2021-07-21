@@ -1,8 +1,9 @@
 module.exports = {
     DATABASE_CONFIG: {
-        SELECTED: 3,
+        SELECTED: 2,
         config: {
             1: {
+                type: 'MONGOOSE',
                 url: 'mongodb://localhost/ecommerce',
                 options: {
                     useNewUrlParser: true,
@@ -10,13 +11,15 @@ module.exports = {
                 }
             },
             2: {
-                url: 'mongodb://localhost/ecommerce',
+                type: 'MONGOOSE',
+                url: 'mongodb+srv://meljazmin:jRyNkpthnWqIxHLe@cluster0.d0tow.mongodb.net/ecommerce?retryWrites=true&w=majority',
                 options: {
                     useNewUrlParser: true,
                     useUnifiedTopology: true
                 }
             },
             3: {
+                type: 'KNEX',
                 client: 'mysql',
                 connection: {
                     host: '127.0.0.1',

@@ -11,12 +11,13 @@ class ProductosDAO extends DAOInterface {
     }
 
     async create(entity) {
-        return await this.knex(table).insert(entity);
+        const id = await this.knex(table).insert(entity);
+        return this.read(id);
     }
 
     async read(id) {
         if (id) {
-            return await this.knex(table).where({ id });
+            return await this.knex(table).where({ id }).first();
         } else {
             return await this.knex(table);
         }
@@ -24,6 +25,7 @@ class ProductosDAO extends DAOInterface {
 
     async update(id, entity) {
         await this.knex(table).where({ id }).update(entity);
+        return this.read(id);
     }
 
     async delete(id) {

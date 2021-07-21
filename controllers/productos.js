@@ -34,7 +34,7 @@ class Productos {
             throw Error("El stock no es correcto");
         }
 
-        const timestamp = utils.calcularTimestamp();
+        const timestamp = new Date();
         return await this.dao.create({ timestamp, nombre, descripcion, codigo, foto, precio: parseFloat(precio), stock: parseFloat(stock) });
     }
 
